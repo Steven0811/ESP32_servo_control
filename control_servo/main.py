@@ -1,6 +1,6 @@
 import requests
 
-ESP32_IP = "192.168.4.1"
+ESP32_IP = "YOUR_ESP32_IP_HERE"
 
 def send_command(servo_id, angle):
     url = f"http://{ESP32_IP}/move?servo={servo_id}&angle={angle}"

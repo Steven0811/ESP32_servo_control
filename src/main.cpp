@@ -1,8 +1,9 @@
 #include <WiFi.h>
 #include <WebServer.h>
 
-const char* ssid = "ESP32-SERVO";
-const char* password = "12345678";
+const char* ssid = "Your_WiFi_NAME";
+const char* password = "Your_WiFi_PASSWORD";
+
 WebServer server(80);
 
 #define RX_PIN 18
@@ -31,7 +32,7 @@ void sendPack(uint8_t id, uint8_t cmd, const uint8_t* p, uint8_t n) {
 }
 
 void moveServo(uint8_t id, uint16_t angle) {
-  if (angle > 1000) angle = 1000;
+  if (angle > 1000) angle = 1000; 
   uint8_t pos[4] = { uint8_t(angle & 0xFF), uint8_t(angle >> 8), 100, 0 };
   sendPack(id, CMD_MOVE, pos, 4);
 }
@@ -42,7 +43,7 @@ void handleMove() {
     uint16_t angle = server.arg("angle").toInt();
     moveServo(servo, angle);
     server.send(200, "text/plain", "OK");
-    Serial.printf("Servo %d -> %d deg\n", servo, angle);
+    Serial.printf("Servo %d → %d°\n", servo, angle);
   } else {
     server.send(400, "text/plain", "Missing parameters");
   }
@@ -52,14 +53,23 @@ void setup() {
   Serial.begin(115200);
   BusSerial.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
 
-  WiFi.softAP(ssid, password);
-  Serial.println("AP Ready. IP:");
-  Serial.println(WiFi.softAPIP());
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi...");
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nWiFi connected");
+  Serial.print("ESP32 IP address: ");
+  Serial.println(WiFi.localIP());
 
   server.on("/move", handleMove);
   server.begin();
+  Serial.println("HTTP server started");
 }
 
 void loop() {
-  server.handleClient(); 
+  server.handleClient();
 }
