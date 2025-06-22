@@ -1,8 +1,8 @@
 #include <WiFi.h>
 #include <WebServer.h>
 
-const char* ssid = "Your_WiFi_NAME";
-const char* password = "Your_WiFi_PASSWORD";
+const char* ssid = "pominddd";
+const char* password = "ncku0928";
 
 WebServer server(80);
 
@@ -72,4 +72,5 @@ void setup() {
 
 void loop() {
   server.handleClient();
+  Serial.println(WiFi.localIP());
 }
