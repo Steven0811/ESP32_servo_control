@@ -54,23 +54,18 @@ void setup() {
   BusSerial.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
 
   WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi...");
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
 
-  Serial.println("\nWiFi connected");
-  Serial.print("ESP32 IP address: ");
-  Serial.println(WiFi.localIP());
-
   server.on("/move", handleMove);
   server.begin();
-  Serial.println("HTTP server started");
 }
 
 void loop() {
   server.handleClient();
+  Serial.print("ESP32 IP address: ");
   Serial.println(WiFi.localIP());
 }
