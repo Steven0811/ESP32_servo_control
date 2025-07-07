@@ -8,9 +8,10 @@
 #include <trajectory_msgs/msg/joint_trajectory.h>
 #include <trajectory_msgs/msg/joint_trajectory_point.h>
 
-char ssid[] = "Your_SSID"; // Please set your WiFi SSID
-char password[] = "Your_PASSWORD"; // Please set your WiFi Password
-IPAddress agent_ip = IPAddress(192, 168, 1, 100); // Please set your micro-ROS agent IP address
+char ssid[] = "yichengs_wifi"; // Please set your WiFi SSID
+char password[] = "ycs13579"; // Please set your WiFi Password
+IPAddress agent_ip = IPAddress(192, 168, 137, 179); // Please set your micro-ROS agent IP address
+int ros_domain_id = 10;
 int agent_port = 8888;
 
 #define NUM_SERVOS 12
@@ -137,35 +138,51 @@ void setup() {
   rcl_ret_t ret;
   int retry_count = 0;
   const int max_retries = 10;
-  
+
+  rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
+  ret = rcl_init_options_init(&init_options, allocator);
+  if (ret != RCL_RET_OK) {
+    Serial.println("Failed to initialize rcl init options");
+    while (1) delay(1000);
+  }
+
+  ret = rcl_init_options_set_domain_id(&init_options, ros_domain_id);
+  if (ret != RCL_RET_OK) {
+    Serial.println("Failed to set ROS_DOMAIN_ID");
+    while (1) delay(1000);
+  }
+
   do {
-    ret = rclc_support_init(&support, 0, NULL, &allocator);
+    ret = rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
     if (ret != RCL_RET_OK) {
       retry_count++;
       Serial.printf("Connection attempt %d/%d failed, retrying in 2 seconds...\n", retry_count, max_retries);
       delay(2000);
     }
   } while (ret != RCL_RET_OK && retry_count < max_retries);
-  
+
   if (ret != RCL_RET_OK) {
     Serial.printf("Failed to initialize micro-ROS support after %d attempts\n", max_retries);
     Serial.println("Check network connectivity and agent status");
-    while(1) {
+
+    while (1) {
       delay(5000);
       Serial.println("Retrying connection...");
-      if (rclc_support_init(&support, 0, NULL, &allocator) == RCL_RET_OK) {
+
+      ret = rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
+      if (ret == RCL_RET_OK) {
         Serial.println("Connection established!");
         break;
       }
     }
   }
-  
+
+  rcl_init_options_fini(&init_options);
+
   ret = rclc_node_init_default(&node, "servo_node", "", &support);
   if (ret != RCL_RET_OK) {
     Serial.println("Failed to initialize micro-ROS node");
-    while(1) {
-      delay(1000);
-    }
+    while (1) delay(1000);
   }
   
   Serial.println("micro-ROS node initialized successfully");
