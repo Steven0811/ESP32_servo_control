@@ -7,6 +7,7 @@ CONTAINER_CODE_DIR="/workspaces/src/servo_publisher"
 
 docker run -it --rm \
   --network host \
+  -e ROS_DOMAIN_ID=0 \
   -v "${HOST_CODE_DIR}:${CONTAINER_CODE_DIR}" \
   -w "${CONTAINER_CODE_DIR}" \
   "${IMAGE}" \
